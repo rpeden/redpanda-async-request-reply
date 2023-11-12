@@ -9,7 +9,7 @@ from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 
 kafka_server = "localhost:9092"  # Replace with your Redpanda server address
 request_topic = "image-request"
-response_topic = "image-response"
+reply_topic = "image-reply"
 
 class ImageProcessor:
     def __init__(self):
@@ -22,8 +22,8 @@ class ImageProcessor:
 
     async def create_consumer(self):
         self.consumer = AIOKafkaConsumer(
-            response_topic,
-            group_id="image-desaturate-group"
+            reply_topic,
+            group_id="image-reply-group"
         )
         await self.consumer.start()
 
@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.send_text(msg.value.decode('utf-8'))
 
     # Start consuming
-    asyncio.create_task(processor.consume_from_kafka(response_topic, send_message_to_websocket))
+    asyncio.create_task(processor.consume_from_kafka(reply_topic, send_message_to_websocket))
 
     # Keep the connection open
     while True:

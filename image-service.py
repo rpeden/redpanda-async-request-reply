@@ -8,7 +8,7 @@ kafka_server = "localhost:9092"  # Replace with your Redpanda server address
 topic_name = "image_upload_topic"  # Replace with your topic name
 
 request_topic = "image-request"
-response_topic = "image-response"
+reply_topic = "image-reply"
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 images_path = os.path.join(current_dir, "static/images")
@@ -43,7 +43,7 @@ async def process_image(filename):
             grayscale.save(os.path.join(images_path, new_filename))
             print(f"Processed: {new_filename}")
             # Send new filename to Kafka
-            await send_to_kafka(response_topic, new_filename)
+            await send_to_kafka(reply_topic, new_filename)
     except Exception as e:
         print(f"Error processing {filename}: {e}")
 
