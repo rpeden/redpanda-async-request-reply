@@ -5,15 +5,13 @@ from PIL import Image, ImageOps
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 
 kafka_server = "localhost:9092"  # Replace with your Redpanda server address
-topic_name = "image_upload_topic"  # Replace with your topic name
-
 request_topic = "image-request"
 reply_topic = "image-reply"
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 images_path = os.path.join(current_dir, "static/images")
 
-async def consume():
+async def read_requests():
     consumer = AIOKafkaConsumer(
         request_topic,
         bootstrap_servers=kafka_server,
@@ -27,7 +25,7 @@ async def consume():
     finally:
         await consumer.stop()
 
-async def send_to_kafka(topic, message):
+async def send_to_topic(topic, message):
     producer = AIOKafkaProducer(bootstrap_servers=kafka_server)
     await producer.start()
     try:
@@ -43,10 +41,10 @@ async def process_image(filename):
             grayscale.save(os.path.join(images_path, new_filename))
             print(f"Processed: {new_filename}")
             # Send new filename to Kafka
-            await send_to_kafka(reply_topic, new_filename)
+            await send_to_topic(reply_topic, new_filename)
     except Exception as e:
         print(f"Error processing {filename}: {e}")
 
 if __name__ == "__main__":
     print("Starting image service...")
-    asyncio.run(consume())
+    asyncio.run(read_requests())

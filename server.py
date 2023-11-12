@@ -27,10 +27,10 @@ class ImageProcessor:
         )
         await self.consumer.start()
 
-    async def send_to_kafka(self, topic, message):
+    async def send_to_topic(self, topic, message):
         await self.producer.send_and_wait(topic, message.encode('utf-8'))
 
-    async def consume_from_kafka(self, topic, callback):
+    async def consume_from_topic(self, topic, callback):
         print(f"Consuming from {topic}")
         async for msg in self.consumer:
             print(f"Received message: {msg.value.decode('utf-8')}")
@@ -50,7 +50,7 @@ app = FastAPI(lifespan=startup)
 # Mount the static directory to serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Redirect root to the static index.html
+# Redirect root URL to the static index.html
 @app.get("/")
 async def read_index():
     return FileResponse('static/index.html')
@@ -64,8 +64,8 @@ async def upload_image(file: UploadFile = File(...)):
     print(f"Saving file to {file_location}")
     with open(file_location, "wb") as file_object:
         file_object.write(await file.read())
-    # Send filename to Kafka
-    await processor.send_to_kafka(request_topic, file.filename)
+    # Send filename to Redpanda
+    await processor.send_to_topic(request_topic, file.filename)
     return {"filename": file.filename}
 
 # WebSocket endpoint
@@ -76,7 +76,7 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.send_text(msg.value.decode('utf-8'))
 
     # Start consuming
-    asyncio.create_task(processor.consume_from_kafka(reply_topic, send_message_to_websocket))
+    asyncio.create_task(processor.consume_from_topic(reply_topic, send_message_to_websocket))
 
     # Keep the connection open
     while True:
