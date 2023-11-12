@@ -4,7 +4,7 @@ import os
 from PIL import Image, ImageOps
 from aiokafka import AIOKafkaConsumer, AIOKafkaProducer
 
-kafka_server = "localhost:9092"  # Replace with your Redpanda server address
+redpanda_server = "localhost:9092"  # Replace with your Redpanda server address
 request_topic = "image-request"
 reply_topic = "image-reply"
 
@@ -14,7 +14,7 @@ images_path = os.path.join(current_dir, "static/images")
 async def read_requests():
     consumer = AIOKafkaConsumer(
         request_topic,
-        bootstrap_servers=kafka_server,
+        bootstrap_servers=redpanda_server,
         group_id="image-process-group"
     )
     await consumer.start()
@@ -26,7 +26,7 @@ async def read_requests():
         await consumer.stop()
 
 async def send_to_topic(topic, message):
-    producer = AIOKafkaProducer(bootstrap_servers=kafka_server)
+    producer = AIOKafkaProducer(bootstrap_servers=redpanda_server)
     await producer.start()
     try:
         await producer.send_and_wait(topic, message.encode('utf-8'))
