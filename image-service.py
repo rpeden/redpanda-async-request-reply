@@ -40,7 +40,7 @@ async def process_image(filename):
             new_filename = f"desaturated_{filename}"
             grayscale.save(os.path.join(images_path, new_filename))
             print(f"Processed: {new_filename}")
-            # Send new filename to Kafka
+            # Send new filename to Redpanda
             await send_to_topic(reply_topic, new_filename)
     except Exception as e:
         print(f"Error processing {filename}: {e}")
