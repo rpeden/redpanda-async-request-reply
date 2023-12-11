@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer
 
-kafka_server = "localhost:9092"  # Replace with your Redpanda server address
+redpanda_server = "localhost:9092"  # Replace with your Redpanda server address
 request_topic = "image-request"
 reply_topic = "image-reply"
 
@@ -15,7 +15,7 @@ reply_topic = "image-reply"
 # Startup event handler
 @asynccontextmanager
 async def startup(app):
-    app.producer = AIOKafkaProducer(bootstrap_servers=[kafka_server])
+    app.producer = AIOKafkaProducer(bootstrap_servers=[redpanda_server])
     await app.producer.start()
     
     app.consumer = AIOKafkaConsumer(
